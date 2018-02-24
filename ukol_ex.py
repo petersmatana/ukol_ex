@@ -32,6 +32,7 @@ class Task(object):
         png = re.match(r'.*png$', url)
         jpg = re.match(r'.*jpg$', url)
         jpeg = re.match(r'.*jpeg$', url)
+        ico = re.match(r'.*ico$', url)
 
         if png:
             return 'picture', 'png'
@@ -41,6 +42,9 @@ class Task(object):
 
         if jpeg:
             return 'picture', 'jpeg'
+
+        if ico:
+            return 'picture', 'ico'
 
         return 'link'
 
@@ -91,9 +95,10 @@ class Task(object):
             if response:
                 data = response.read().decode('utf-8')
 
-                # https://stackoverflow.com/questions/6883049/regex-to-find-urls-in-string-in-python
+                # source: https://stackoverflow.com/questions/6883049/regex-to-find-urls-in-string-in-python
                 url_link_mask = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
                 links = re.findall(url_link_mask, data)
+
                 if links:
                     for link in links:
                         self.final_url_process(link)
