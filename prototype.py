@@ -5,6 +5,15 @@ import urllib
 import re
 
 
+def skip_page(url):
+    pdf_pages = re.match(r'.*pdf$', url)
+
+    if pdf_pages:
+        return False
+
+    return True
+
+
 def picture_or_link(url):
     png = re.match(r'.*png$', url)
 
@@ -22,37 +31,55 @@ def download_picture(name, file_type, url):
     f.close()
 
 
-def do_the_job(all_url, url):
+def do_the_job(url, all_links):
     """
     get url, check all links, down all pictures
     and do it over all pages and subpages
     """
 
-    request = Request(url)
-    response = urlopen(request)
-    data = response.read().decode('utf-8')
+    print("run job for = ", url)
 
-    pic_name = 0
+    if skip_page(url):
 
-    # https://stackoverflow.com/questions/6883049/regex-to-find-urls-in-string-in-python
-    links = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', data)
-    if links:
-        for link in links:
+        request = Request(url)
+        response = None
 
-            if link not in all_url:
+        try:
+            response = urlopen(request)
+        except Exception as ex:
+            # hey senty.com, can you make a log please? :)
+            ...
 
-                pic_or_link = picture_or_link(link)
+        if response:
+            data = response.read().decode('utf-8')
 
-                if pic_or_link[0] == 'link':
-                    all_url.append(link)
+            pic_name = 0
 
-                if pic_or_link[0] == 'picture':
-                    pic_name += 1
-                    download_picture(name=pic_name, file_type=pic_or_link[1], url=link)
+            # https://stackoverflow.com/questions/6883049/regex-to-find-urls-in-string-in-python
+            links = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', data)
+            if links:
+                for link in links:
+
+                    if link in all_links:
+                        continue
+
+                    pic_or_link = picture_or_link(link)
+
+                    if pic_or_link[0] == 'l':
+
+                        exponea_page = re.match('https://exponea.*', link)
+                        if exponea_page:
+                            print(link)
+                            all_links.append(link)
+                            do_the_job(link, all_links)
+
+                    if pic_or_link[0] == 'picture':
+                        pic_name += 1
+                        # download_picture(name=pic_name, file_type=pic_or_link[1], url=link)
 
 
 if __name__ == "__main__":
 
-    all_url = []
+    all_links = []
 
-    do_the_job(all_url, 'https://exponea.com/')
+    do_the_job('https://exponea.com/', all_links)
