@@ -22,8 +22,13 @@ def download_picture(name, file_type, url):
     f.close()
 
 
-if __name__ == "__main__":
-    request = Request('https://exponea.com/')
+def do_the_job(all_url, url):
+    """
+    get url, check all links, down all pictures
+    and do it over all pages and subpages
+    """
+
+    request = Request(url)
     response = urlopen(request)
     data = response.read().decode('utf-8')
 
@@ -34,7 +39,20 @@ if __name__ == "__main__":
     if links:
         for link in links:
 
-            pic_or_link = picture_or_link(link)
-            if pic_or_link[0] == 'picture':
-                pic_name += 1
-                download_picture(name=pic_name, file_type=pic_or_link[1], url=link)
+            if link not in all_url:
+
+                pic_or_link = picture_or_link(link)
+
+                if pic_or_link[0] == 'link':
+                    all_url.append(link)
+
+                if pic_or_link[0] == 'picture':
+                    pic_name += 1
+                    download_picture(name=pic_name, file_type=pic_or_link[1], url=link)
+
+
+if __name__ == "__main__":
+
+    all_url = []
+
+    do_the_job(all_url, 'https://exponea.com/')
